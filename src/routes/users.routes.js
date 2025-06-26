@@ -6,6 +6,7 @@ import {
     findUserByPhone,
     createUser
 } from '../db/users.js'
+import {COOKIE_NAME} from "../assets/constants.js";
 
 const router = express.Router()
 const JWT_SECRET = process.env.JWT_SECRET
@@ -28,7 +29,14 @@ router.post('/register', async (req, res) => {
 
         const token = jwt.sign({ id: user.id, phone: user.phone }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN })
 
-        res.status(201).json({ user, token })
+        res.cookie(COOKIE_NAME, token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'Strict',
+            maxAge: 1000 * 60 * 60 * 2
+        })
+
+        res.status(201).json({ user })
     } catch (err) {
         console.error('Ошибка регистрации:', err)
         res.status(500).json({ error: 'Ошибка сервера' })
@@ -54,13 +62,30 @@ router.post('/login', async (req, res) => {
         }
 
         const token = jwt.sign({ id: user.id, phone: user.phone }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN })
+
+        res.cookie(COOKIE_NAME, token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'Strict',
+            maxAge: 1000 * 60 * 60 * 2
+        })
+
         delete user.password
 
-        res.json({ user, token })
+        res.json({ user })
     } catch (err) {
         console.error('Ошибка входа:', err)
         res.status(500).json({ error: 'Ошибка сервера' })
     }
+})
+
+router.post('/logout', (req, res) => {
+    res.clearCookie(COOKIE_NAME, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'Strict',
+    })
+    res.json({ message: 'Вы вышли из системы' })
 })
 
 export default router

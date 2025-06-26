@@ -1,11 +1,10 @@
 import express from 'express'
-import { mockAuth } from '../middleware/auth.js'
 import dotenv from 'dotenv'
 dotenv.config()
 
 const router = express.Router()
 
-router.post('/foot-walking', mockAuth, async (req, res) => {
+router.post('/foot-walking', async (req, res) => {
     const API_KEY = process.env.ORS_API_KEY
 
     try {
