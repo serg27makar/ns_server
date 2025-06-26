@@ -12,7 +12,7 @@ app.use(cors())
 app.use(express.json())
 
 app.use((req, res, next) => {
-    console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`)
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl} ${req.body}`)
     // const blockedPaths = ['/api/maps/hack']
     // if (blockedPaths.includes(req.path)) {
     //     return res.status(403).json({ error: 'Access denied' })
