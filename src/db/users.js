@@ -20,3 +20,8 @@ export async function createUser(name, phone, hashedPassword) {
     )
     return result.rows[0]
 }
+
+export async function getUserById(id) {
+    const result = await pool.query('SELECT id, name, phone FROM users WHERE id = $1', [id])
+    return result.rows[0]
+}
