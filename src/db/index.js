@@ -6,9 +6,16 @@ dotenv.config()
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: {
-        rejectUnauthorized: false, // для Neon нужно отключить строгую проверку
+        rejectUnauthorized: false,
     },
+    max: 10,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 2000,
 })
+
+pool.on('error', (err, client) => {
+    console.error('ОШИБКА В ПУЛЕ PostgreSQL:', err);
+});
 
 export async function dbConnect() {
     try {
