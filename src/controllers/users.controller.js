@@ -11,17 +11,17 @@ import { signTokenFromUser, getTokenFromRequest, setAuthCookie } from '../utils/
 import { requireFields } from '../utils/validators.js'
 
 export async function registerUser(req, res) {
-    if (!requireFields(['name', 'phone', 'password'], req.body, res)) return
+    if (!requireFields(['name', 'phone', 'password', 'userType'], req.body, res)) return
 
     try {
-        const { name, phone, password } = req.body
+        const { name, phone, password, userType } = req.body
 
         if (await userExists(phone)) {
             return res.status(409).json({ error: 'A user with this number already exists.' })
         }
 
         const hashedPassword = await bcrypt.hash(password, 10)
-        const user = await createUser(name, phone, hashedPassword)
+        const user = await createUser(name, phone, hashedPassword, userType)
         const token = signTokenFromUser(user)
 
         setAuthCookie(res, token)
