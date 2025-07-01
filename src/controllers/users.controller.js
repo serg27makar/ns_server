@@ -4,7 +4,8 @@ import {
     userExists,
     findUserByPhone,
     createUser,
-    getUserById
+    getUserById,
+    updateUserById
 } from '../db/users.js'
 import { COOKIE_NAME } from '../assets/constants.js'
 import { signTokenFromUser, getTokenFromRequest, setAuthCookie } from '../utils/auth.js'
@@ -80,5 +81,28 @@ export async function checkStatus(req, res) {
     } catch (error) {
         console.error('Status check failed:', error)
         return res.status(401).json({ message: 'Invalid or expired token' })
+    }
+}
+
+export async function updateUserProfile(req, res) {
+    try {
+        const token = getTokenFromRequest(req)
+        if (!token) return res.status(401).json({ error: 'Not authenticated' })
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET)
+        const userId = decoded.id
+
+        const { name, phone } = req.body
+
+        if (!name && !phone) {
+            return res.status(400).json({ error: 'No fields to update' })
+        }
+
+        const updatedUser = await updateUserById(userId, { name, phone })
+
+        return res.json({ user: updatedUser })
+    } catch (err) {
+        console.error('Update error:', err)
+        return res.status(500).json({ error: 'Server error' })
     }
 }
