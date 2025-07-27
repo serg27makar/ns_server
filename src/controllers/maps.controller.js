@@ -30,7 +30,6 @@ export async function footWalking(req, res) {
 export async function reverseGeocode(req, res) {
     const { lat, lon, lang = "ua" } = req.body;
 
-    console.log(lat, lon, lang);
     if (!lat || !lon) {
         return res.status(400).json({ error: "lat and lon are required" });
     }
@@ -51,4 +50,16 @@ export async function reverseGeocode(req, res) {
             return res.status(500).json({error: 'Ошибка запроса к Nominatim'});
         }
     });
+}
+
+export async function fetchGeo(req, res) {
+    try {
+        const { query, lang } = req.body;
+        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&accept-language=${lang}&addressdetails=1&limit=5`);
+        const data = await response.json();
+        return res.json(data);
+    } catch (e) {
+        console.error(err);
+        return res.status(500).json({error: 'Ошибка запроса к fetchGeo'});
+    }
 }
