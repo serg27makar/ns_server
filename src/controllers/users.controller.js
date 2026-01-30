@@ -1,5 +1,4 @@
 import bcrypt from 'bcrypt'
-import jwt from 'jsonwebtoken'
 import {
     userExists,
     findUserByPhone,
@@ -8,8 +7,9 @@ import {
     updateUserById
 } from '../db/users.js'
 import { COOKIE_NAME } from '../assets/constants.js'
-import { signTokenFromUser, getTokenFromRequest, setAuthCookie } from '../utils/auth.js'
+import { signTokenFromUser, setAuthCookie } from '../utils/auth.js'
 import { requireFields } from '../utils/validators.js'
+import { isAuth} from "../assets/core.js";
 
 export async function registerUser(req, res) {
     if (!requireFields(['name', 'phone', 'password', 'userType'], req.body, res)) return
@@ -70,11 +70,10 @@ export function logoutUser(req, res) {
 
 export async function checkStatus(req, res) {
     try {
-        const token = getTokenFromRequest(req)
-        if (!token) return res.status(401).json({ message: 'Not authenticated' })
+        const userId = await isAuth(req)
+        if (!userId) return res.status(401).json({ error: 'Not authenticated' })
 
-        const decoded = jwt.verify(token, process.env.JWT_SECRET)
-        const user = await getUserById(decoded.id)
+        const user = await getUserById(userId)
         if (!user) return res.status(401).json({ message: 'User not found' })
 
         return res.json({ user })
@@ -86,11 +85,8 @@ export async function checkStatus(req, res) {
 
 export async function updateUserProfile(req, res) {
     try {
-        const token = getTokenFromRequest(req)
-        if (!token) return res.status(401).json({ error: 'Not authenticated' })
-
-        const decoded = jwt.verify(token, process.env.JWT_SECRET)
-        const userId = decoded.id
+        const userId = isAuth(req)
+        if (!userId) return res.status(401).json({ error: 'Not authenticated' })
 
         const { name, phone } = req.body
 

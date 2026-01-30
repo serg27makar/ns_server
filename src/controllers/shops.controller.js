@@ -5,13 +5,18 @@ import {
     getPhotoById,
     getShopById,
     getShopPhoto,
+    getShopsByUserId,
     insertImage,
     insertShop,
     updateShop
 } from "../db/shops.js";
+import {isAuth} from "../assets/core.js";
 
 export async function shopCreate(req, res) {
     try {
+        const userId = isAuth(req)
+        if (!userId) return res.status(401).json({ error: 'Not authenticated' })
+
         const { name, type, address, description } = req.body
         const typeSafe = type && type.length ? JSON.stringify(type) : null
         const shop = await insertShop(name, typeSafe, JSON.stringify(address), description)
@@ -32,6 +37,7 @@ export async function shopCreate(req, res) {
                 address,
                 description,
                 photos: photoEntries,
+                userId
             },
         })
     } catch (err) {
@@ -46,6 +52,26 @@ export async function shopGetById(req, res) {
         const shopRes = await getShopById(id)
         if (!shopRes) return res.status(404).json({ error: 'Магазин не найден' })
         const photoRes = await getShopPhoto(id)
+
+        return res.json({
+            ...shopRes,
+            photos: photoRes.rows,
+        })
+    } catch (err) {
+        console.error('Ошибка получения магазина:', err)
+        return res.status(500).json({ error: 'Ошибка получения магазина' })
+    }
+}
+
+export async function getUserShops(req, res) {
+    try {
+        const userId = await isAuth(req)
+        if (!userId) return res.status(401).json({ error: 'Not authenticated' })
+
+        const shopRes = await getShopsByUserId(userId.toString())
+        if (!shopRes) return res.status(404).json({ error: 'Магазин не найден' })
+
+        const photoRes = await getShopPhoto(shopRes.id)
 
         return res.json({
             ...shopRes,

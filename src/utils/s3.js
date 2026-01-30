@@ -23,6 +23,7 @@ export async function uploadPhotoToR2(buffer, fileName, mimeType) {
 
     return {
         key: result.Key,
-        url: result.Location,
+        location: result.Location,
+        url: process.env.R2_PUBLIC_ENDPOINT + result.Key,
     }
 }
