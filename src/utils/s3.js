@@ -1,22 +1,28 @@
-const AWS = require('aws-sdk');
+import AWS from 'aws-sdk'
+import dotenv from 'dotenv'
+dotenv.config()
 
 const s3 = new AWS.S3({
-    endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
     accessKeyId: process.env.R2_ACCESS_KEY_ID,
     secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
-    region: 'auto',
+    endpoint: process.env.R2_ENDPOINT,
     signatureVersion: 'v4',
-});
+    s3ForcePathStyle: true,
+})
 
-const fs = require('fs');
+export async function uploadPhotoToR2(buffer, fileName, mimeType) {
+    const params = {
+        Bucket: process.env.R2_BUCKET,
+        Key: fileName,
+        Body: buffer,
+        ContentType: mimeType,
+        ACL: 'public-read',
+    }
 
-s3.putObject({
-    Bucket: process.env.R2_BUCKET,
-    Key: 'test.txt',
-    Body: fs.readFileSync('./test.txt'),
-    ACL: 'public-read', // если нужен публичный доступ
-}, (err, data) => {
-    if (err) console.error(err);
-    else console.log('File uploaded!', data);
-});
+    const result = await s3.upload(params).promise()
 
+    return {
+        key: result.Key,
+        url: result.Location,
+    }
+}
