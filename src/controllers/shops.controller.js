@@ -18,8 +18,8 @@ export async function shopCreate(req, res) {
         if (!userId) return res.status(401).json({ error: 'Not authenticated' })
 
         const { name, type, address, description } = req.body
-        const typeSafe = type && type.length ? JSON.stringify(type) : null
-        const shop = await insertShop(name, typeSafe, JSON.stringify(address), description)
+        const typeSafe = type && type.length ? type : null
+        const shop = await insertShop(name, typeSafe, address, description)
         const photoEntries = []
 
         for (const file of req.files || []) {
@@ -68,7 +68,7 @@ export async function getUserShops(req, res) {
         const userId = await isAuth(req)
         if (!userId) return res.status(401).json({ error: 'Not authenticated' })
 
-        const shopRes = await getShopsByUserId(userId.toString())
+        const shopRes = await getShopsByUserId(userId)
         if (!shopRes) return res.status(404).json({ error: 'Магазин не найден' })
 
         const photoRes = await getShopPhoto(shopRes.id)
