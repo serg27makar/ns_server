@@ -53,6 +53,9 @@ export async function shopGetById(req, res) {
         if (!shopRes) return res.status(404).json({ error: 'Магазин не найден' })
         const photoRes = await getShopPhoto(id)
 
+        shopRes.type = shopRes.type ? JSON.parse(shopRes.type) : []
+        shopRes.address = shopRes.address ? JSON.parse(shopRes.address) : []
+
         return res.json({
             ...shopRes,
             photos: photoRes.rows,
@@ -73,6 +76,9 @@ export async function getUserShops(req, res) {
 
         const photoRes = await getShopPhoto(shopRes.id)
 
+        shopRes.type = shopRes.type ? JSON.parse(shopRes.type) : []
+        shopRes.address = shopRes.address ? JSON.parse(shopRes.address) : []
+
         return res.json({
             ...shopRes,
             photos: photoRes.rows,
@@ -88,10 +94,10 @@ export async function shopUpdate(req, res) {
         const { id } = req.params
         const { name, type, address, description, photoIdsToDelete = '[]' } = req.body
 
-        const typeSafe = type && type.length ? JSON.stringify(type) : null
+        const typeSafe = type && type.length ? type : null
         const photoIds = JSON.parse(photoIdsToDelete)
 
-        await updateShop(name, typeSafe, JSON.stringify(address), description, id)
+        await updateShop(name, typeSafe, address, description, id)
 
         for (const photoId of photoIds) {
             const result = await getPhotoById(photoId, id)
