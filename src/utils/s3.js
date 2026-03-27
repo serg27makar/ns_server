@@ -27,3 +27,12 @@ export async function uploadPhotoToR2(buffer, fileName, mimeType) {
         url: process.env.R2_PUBLIC_ENDPOINT + result.Key,
     }
 }
+
+export async function deletePhotoFromR2(key) {
+    const params = {
+        Bucket: process.env.R2_BUCKET,
+        Key: key,
+    }
+
+    await s3.deleteObject(params).promise()
+}

@@ -1,4 +1,4 @@
-import { uploadPhotoToR2 } from '../utils/s3.js'
+import { uploadPhotoToR2, deletePhotoFromR2 } from '../utils/s3.js'
 
 import {
     deletePhoto,
@@ -99,23 +99,31 @@ export async function shopUpdate(req, res) {
 
         await updateShop(name, typeSafe, address, description, id)
 
+        const deletedPhotos = []
         for (const photoId of photoIds) {
             const result = await getPhotoById(photoId, id)
             const r2Key = result.rows[0]?.r2_key
+
             if (r2Key) {
-                await r2.deleteObject({ Bucket: process.env.R2_BUCKET, Key: r2Key }).promise()
+                await deletePhotoFromR2(r2Key)
             }
+
             await deletePhoto(photoId, id)
+            deletedPhotos.push(photoId)
         }
 
         const newPhotos = []
         for (const file of req.files || []) {
-            const photo = await uploadPhotoToR2(file, file.originalname)
-            await insertImage(id, photo.id, photo.url)
+            const photo = await uploadPhotoToR2(file.buffer, file.originalname, file.mimetype)
+            await insertImage(id, photo.key, photo.url)
             newPhotos.push(photo)
         }
 
-        return res.json({ success: true, newPhotos })
+        return res.json({
+            success: true,
+            deletedPhotos,
+            newPhotos,
+        })
     } catch (err) {
         console.error('Ошибка обновления магазина:', err)
         return res.status(500).json({ error: 'Ошибка обновления магазина' })

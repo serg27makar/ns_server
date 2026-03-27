@@ -2,6 +2,7 @@ import express from 'express'
 import userRoutes from './routes/users.routes.js'
 import shopRoutes from './routes/shops.routes.js'
 import mapsRoutes from "./routes/maps.routes.js";
+import productsRoutes from "./routes/products.routes.js";
 import { dbConnect } from './db/index.js'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
@@ -26,6 +27,7 @@ app.use((req, res, next) => {
 app.use('/api/users', userRoutes)
 app.use('/api/shops', shopRoutes)
 app.use('/api/maps', mapsRoutes)
+app.use('/api/products', productsRoutes)
 
 
 // DB init

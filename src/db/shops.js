@@ -11,8 +11,8 @@ export async function insertShop(name, typeSafe, address, description) {
 
 export async function insertImage(shopId, key, url) {
     await safeQuery(
-        `INSERT INTO shop_photos (shop_id, r2_key, url) VALUES ($1, $2, $3)`,
-        [shopId, key, url],
+        `INSERT INTO photos (entity_id, r2_key, url, entity_type) VALUES ($1, $2, $3, $4)`,
+        [shopId, key, url, 'shop'],
         'insertImage'
     )
 }
@@ -37,7 +37,7 @@ export async function getShopsByUserId(userId) {
 
 export async function getShopPhoto(id) {
     return await safeQuery(
-        `SELECT id, r2_key, url FROM shop_photos WHERE shop_id = $1`,
+        `SELECT id, r2_key, url FROM photos WHERE entity_id = $1 AND entity_type = 'shop'`,
         [id],
         "getShopPhoto"
     )
@@ -52,14 +52,14 @@ export async function updateShop(name, typeSafe, address, description, id) {
 
 export async function getPhotoById(photoId, id) {
     return await safeQuery(
-        `SELECT r2_key FROM shop_photos WHERE id = $1 AND shop_id = $2`,
+        `SELECT r2_key FROM photos WHERE id = $1 AND entity_id = $2 AND entity_type = 'shop'`,
         [photoId, id]
     )
 }
 
 export async function deletePhoto(photoId, id) {
     await safeQuery(
-        `DELETE FROM shop_photos WHERE id = $1 AND shop_id = $2`,
+        `DELETE FROM photos WHERE id = $1 AND entity_id = $2 AND entity_type = 'shop'`,
         [photoId, id]
     )
 }
