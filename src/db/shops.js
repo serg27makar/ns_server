@@ -9,10 +9,10 @@ export async function insertShop(name, typeSafe, address, description) {
     return result.rows[0]
 }
 
-export async function insertImage(shopId, key, url) {
+export async function insertImage(entityId, key, url, entityType) {
     await safeQuery(
         `INSERT INTO photos (entity_id, r2_key, url, entity_type) VALUES ($1, $2, $3, $4)`,
-        [shopId, key, url, 'shop'],
+        [entityId, key, url, entityType],
         'insertImage'
     )
 }

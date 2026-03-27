@@ -24,7 +24,7 @@ export async function shopCreate(req, res) {
 
         for (const file of req.files || []) {
             const photo = await uploadPhotoToR2(file.buffer, file.originalname, file.mimetype)
-            await insertImage(shop.id, photo.key, photo.url)
+            await insertImage(shop.id, photo.key, photo.url, "shop")
             photoEntries.push(photo)
         }
 
@@ -115,7 +115,7 @@ export async function shopUpdate(req, res) {
         const newPhotos = []
         for (const file of req.files || []) {
             const photo = await uploadPhotoToR2(file.buffer, file.originalname, file.mimetype)
-            await insertImage(id, photo.key, photo.url)
+            await insertImage(id, photo.key, photo.url, "shop")
             newPhotos.push(photo)
         }
 

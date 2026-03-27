@@ -1,6 +1,7 @@
 import {isAuth} from "../assets/core.js";
-import {insertImage, insertShop} from "../db/shops.js";
+import {insertImage} from "../db/shops.js";
 import {uploadPhotoToR2} from "../utils/s3.js";
+import {insertProduct} from "../db/products.js";
 
 
 export async function productsCreate(req, res) {
@@ -14,24 +15,24 @@ export async function productsCreate(req, res) {
 
         for (const file of req.files || []) {
             const photo = await uploadPhotoToR2(file.buffer, file.originalname, file.mimetype)
-            await insertImage(shop.id, photo.key, photo.url)
+            await insertImage(product.id, photo.key, photo.url, "product")
             photoEntries.push(photo)
         }
 
         return res.status(201).json({
             success: true,
-            shop: {
-                id: shop.id,
+            product: {
+                id: product.id,
+                shopId,
                 name,
-                type,
-                address,
+                price,
                 description,
                 photos: photoEntries,
                 userId
             },
         })
     } catch (err) {
-        console.error('Ошибка создания магазина:', err)
-        return res.status(500).json({ error: 'Ошибка создания магазина' })
+        console.error('Ошибка создания товара:', err)
+        return res.status(500).json({ error: 'Ошибка создания товара' })
     }
 }
