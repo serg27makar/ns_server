@@ -58,9 +58,7 @@ export async function fetchGeo(req, res) {
         const response = await fetch(
             `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&accept-language=${lang}&addressdetails=1&limit=5`,
             {
-                headers: {
-                    'User-Agent': 'ns_server (serg27makar@gmail.com)'
-                }
+                headers: {'User-Agent': `ns_server (${process.env.MY_EMAIL})`}
             }
         );
         if (!response.ok) {
