@@ -50,16 +50,16 @@ export async function updateShop(name, typeSafe, address, description, id) {
     )
 }
 
-export async function getPhotoById(photoId, id) {
+export async function getPhotoById(photoId, id, entityType) {
     return await safeQuery(
-        `SELECT r2_key FROM photos WHERE id = $1 AND entity_id = $2 AND entity_type = 'shop'`,
-        [photoId, id]
+        `SELECT r2_key FROM photos WHERE id = $1 AND entity_id = $2 AND entity_type = $3`,
+        [photoId, id, entityType]
     )
 }
 
-export async function deletePhoto(photoId, id) {
+export async function deletePhoto(photoId, id, entityType) {
     await safeQuery(
-        `DELETE FROM photos WHERE id = $1 AND entity_id = $2 AND entity_type = 'shop'`,
-        [photoId, id]
+        `DELETE FROM photos WHERE id = $1 AND entity_id = $2 AND entity_type = $3`,
+        [photoId, id, entityType]
     )
 }

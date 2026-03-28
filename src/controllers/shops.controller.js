@@ -101,14 +101,14 @@ export async function shopUpdate(req, res) {
 
         const deletedPhotos = []
         for (const photoId of photoIds) {
-            const result = await getPhotoById(photoId, id)
+            const result = await getPhotoById(photoId, id, "shop")
             const r2Key = result.rows[0]?.r2_key
 
             if (r2Key) {
                 await deletePhotoFromR2(r2Key)
             }
 
-            await deletePhoto(photoId, id)
+            await deletePhoto(photoId, id, "shop")
             deletedPhotos.push(photoId)
         }
 
