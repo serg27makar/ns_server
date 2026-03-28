@@ -55,10 +55,20 @@ export async function reverseGeocode(req, res) {
 export async function fetchGeo(req, res) {
     try {
         const { query, lang } = req.body;
-        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&accept-language=${lang}&addressdetails=1&limit=5`);
+        const response = await fetch(
+            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&accept-language=${lang}&addressdetails=1&limit=5`,
+            {
+                headers: {
+                    'User-Agent': 'ns_server (serg27makar@gmail.com)'
+                }
+            }
+        );
+        if (!response.ok) {
+            return res.status(response.status).json({ error: 'Ошибка запроса к fetchGeo' });
+        }
         const data = await response.json();
         return res.json(data);
-    } catch (e) {
+    } catch (err) {
         console.error(err);
         return res.status(500).json({error: 'Ошибка запроса к fetchGeo'});
     }
