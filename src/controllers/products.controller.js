@@ -1,7 +1,7 @@
 import {isAuth} from "../assets/core.js";
-import {deletePhoto, getPhotoById, insertImage} from "../db/shops.js";
+import {deletePhoto, deletePhotosByEntity, getPhotoById, insertImage} from "../db/shops.js";
 import {deletePhotoFromR2, uploadPhotoToR2} from "../utils/s3.js";
-import {getProductPhoto, getProductsByShopsId, insertProduct, updateProduct} from "../db/products.js";
+import {deleteProduct, getProductPhoto, getProductsByShopsId, insertProduct, updateProduct} from "../db/products.js";
 
 export async function productsCreate(req, res) {
     try {
@@ -92,5 +92,31 @@ export async function productUpdate(req, res) {
     } catch (err) {
         console.error('Ошибка обновления товара:', err)
         return res.status(500).json({ error: 'Ошибка обновления товара' })
+    }
+}
+
+export async function productDelete(req, res) {
+    try {
+        const { id } = req.params
+
+        const photoResult = await getProductPhoto(id)
+        const photos = photoResult.rows
+
+        for (const photo of photos) {
+            if (photo.r2_key) {
+                await deletePhotoFromR2(photo.r2_key)
+            }
+        }
+
+        await deletePhotosByEntity(id, "product")
+        await deleteProduct(id)
+
+        return res.json({
+            success: true,
+            message: 'Товар успешно удален'
+        })
+    } catch (err) {
+        console.error('Ошибка удаления товара:', err)
+        return res.status(500).json({ error: 'Ошибка удаления товара' })
     }
 }

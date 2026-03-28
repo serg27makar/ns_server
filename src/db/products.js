@@ -32,3 +32,11 @@ export async function updateProduct(name, price, description, id) {
         [name, price, description, id]
     )
 }
+
+export async function deleteProduct(id) {
+    await safeQuery(
+        `DELETE FROM product WHERE id = $1`,
+        [id],
+        'deleteProduct'
+    )
+}

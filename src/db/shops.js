@@ -63,3 +63,11 @@ export async function deletePhoto(photoId, id, entityType) {
         [photoId, id, entityType]
     )
 }
+
+export async function deletePhotosByEntity(entityId, entityType) {
+    await safeQuery(
+        `DELETE FROM photos WHERE entity_id = $1 AND entity_type = $2`,
+        [entityId, entityType],
+        'deletePhotosByEntity'
+    )
+}
