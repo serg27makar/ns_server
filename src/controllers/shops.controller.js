@@ -17,9 +17,11 @@ export async function shopCreate(req, res) {
         const userId = await isAuth(req)
         if (!userId) return res.status(401).json({ error: 'Not authenticated' })
 
-        const { name, type, address, description } = req.body
-        const typeSafe = type && type.length ? type : null
-        const shop = await insertShop(name, typeSafe, address, description)
+        const { name, type, address, description, location } = req.body
+        const types = JSON.parse(type)
+        const typeSafe = types.map((t) => t.id)
+        const { lat, lng } = JSON.parse(location)
+        const shop = await insertShop(name, typeSafe, address, description, lat, lng)
         const photoEntries = []
 
         for (const file of req.files || []) {
@@ -35,6 +37,8 @@ export async function shopCreate(req, res) {
                 name,
                 type,
                 address,
+                location_lat: lat,
+                location_lng: lng,
                 description,
                 photos: photoEntries,
                 userId
@@ -53,7 +57,6 @@ export async function shopGetById(req, res) {
         if (!shopRes) return res.status(404).json({ error: 'Магазин не найден' })
         const photoRes = await getShopPhoto(id)
 
-        shopRes.type = shopRes.type ? JSON.parse(shopRes.type) : []
         shopRes.address = shopRes.address ? JSON.parse(shopRes.address) : []
 
         return res.json({
@@ -76,7 +79,6 @@ export async function getUserShops(req, res) {
 
         const photoRes = await getShopPhoto(shopRes.id)
 
-        shopRes.type = shopRes.type ? JSON.parse(shopRes.type) : []
         shopRes.address = shopRes.address ? JSON.parse(shopRes.address) : []
 
         return res.json({
@@ -92,12 +94,14 @@ export async function getUserShops(req, res) {
 export async function shopUpdate(req, res) {
     try {
         const { id } = req.params
-        const { name, type, address, description, photoIdsToDelete = '[]' } = req.body
+        const { name, type, address, description, location, photoIdsToDelete = '[]' } = req.body
+        const { lat, lng } = JSON.parse(location)
 
-        const typeSafe = type && type.length ? type : null
+        const types = JSON.parse(type)
+        const typeSafe = types.map((t) => t.id)
         const photoIds = JSON.parse(photoIdsToDelete)
 
-        await updateShop(name, typeSafe, address, description, id)
+        await updateShop(name, typeSafe, address, description, lat, lng, id)
 
         const deletedPhotos = []
         for (const photoId of photoIds) {
