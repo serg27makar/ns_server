@@ -14,7 +14,7 @@ import {isAuth} from "../assets/core.js";
 
 export async function shopCreate(req, res) {
     try {
-        const userId = isAuth(req)
+        const userId = await isAuth(req)
         if (!userId) return res.status(401).json({ error: 'Not authenticated' })
 
         const { name, type, address, description } = req.body

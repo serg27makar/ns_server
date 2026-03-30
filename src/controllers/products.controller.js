@@ -5,7 +5,7 @@ import {deleteProduct, getProductPhoto, getProductsByShopsId, insertProduct, upd
 
 export async function productsCreate(req, res) {
     try {
-        const userId = isAuth(req)
+        const userId = await isAuth(req)
         if (!userId) return res.status(401).json({ error: 'Not authenticated' })
 
         const { name, price, shopId, description } = req.body
