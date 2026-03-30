@@ -1,4 +1,5 @@
 import {safeQuery} from "./query.js";
+const SEARCH_RADIUS_KM = 100;
 
 export async function insertShop(name, typeSafe, address, description, lat, lng) {
     const result = await safeQuery(
@@ -70,4 +71,44 @@ export async function deletePhotosByEntity(entityId, entityType) {
         [entityId, entityType],
         'deletePhotosByEntity'
     )
+}
+
+export async function getShops(filters = {}) {
+    const { name, type, location_lat, location_lng } = filters
+    let queryText = `SELECT id, name, type, address, description, location_lat, location_lng FROM shops`
+    const queryParams = []
+    const conditions = []
+
+    if (name) {
+        queryParams.push(`%${name}%`)
+        conditions.push(`name ILIKE $${queryParams.length}`)
+    }
+
+    if (type) {
+        const typeArray = Array.isArray(type) ? type : [type]
+        queryParams.push(typeArray)
+        conditions.push(`type && $${queryParams.length}`)
+    }
+
+    if (location_lat && location_lng) {
+        const latDelta = SEARCH_RADIUS_KM / 111.1
+        const lngDelta = SEARCH_RADIUS_KM / (111.1 * Math.cos(location_lat * (Math.PI / 180)))
+
+        queryParams.push(location_lat - latDelta, location_lat + latDelta)
+        const latIdxStart = queryParams.length - 1
+        const latIdxEnd = queryParams.length
+        conditions.push(`location_lat BETWEEN $${latIdxStart} AND $${latIdxEnd}`)
+
+        queryParams.push(location_lng - lngDelta, location_lng + lngDelta)
+        const lngIdxStart = queryParams.length - 1
+        const lngIdxEnd = queryParams.length
+        conditions.push(`location_lng BETWEEN $${lngIdxStart} AND $${lngIdxEnd}`)
+    }
+
+    if (conditions.length > 0) {
+        queryText += ` WHERE ` + conditions.join(' AND ')
+    }
+
+    const result = await safeQuery(queryText, queryParams, 'getShops')
+    return result.rows
 }

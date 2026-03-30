@@ -6,6 +6,7 @@ import {
     getShopById,
     getShopPhoto,
     getShopsByUserId,
+    getShops,
     insertImage,
     insertShop,
     updateShop
@@ -131,5 +132,34 @@ export async function shopUpdate(req, res) {
     } catch (err) {
         console.error('Ошибка обновления магазина:', err)
         return res.status(500).json({ error: 'Ошибка обновления магазина' })
+    }
+}
+
+export async function shopList(req, res) {
+    try {
+        const { name, type, location_lat, location_lng } = req.query
+        const filters = {}
+
+        if (name) filters.name = name
+        if (type) {
+            try {
+                filters.type = JSON.parse(type)
+            } catch (e) {
+                filters.type = type
+            }
+        }
+        if (location_lat) filters.location_lat = parseFloat(location_lat)
+        if (location_lng) filters.location_lng = parseFloat(location_lng)
+
+        const shops = await getShops(filters)
+        shops.map(shop => {
+            shop.address = shop.address ? JSON.parse(shop.address) : null
+            return shop
+        })
+
+        return res.json(shops)
+    } catch (err) {
+        console.error('Ошибка получения списка магазинов:', err)
+        return res.status(500).json({ error: 'Ошибка получения списка магазинов' })
     }
 }
